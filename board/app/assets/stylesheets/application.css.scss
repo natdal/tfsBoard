@@ -1,0 +1,15 @@
+/*application.html.erb 스타일*/
+$light-orange: #ff8c00;
+$navbar-default-color: $light-orange;
+$navbar-default-bg: #312312;
+$navbar-default-link-color: gray;
+$navbar-default-link-active-color: $light-orange;
+$navbar-default-link-hover-color: white;
+$navbar-default-link-hover-bg: black;
+
+@import 'bootstrap'; /*부트스트랩 css추가*/
+@import 'posts'; /*posts.css.scss 추가*/
+@import 'custom'; /*custom.css.scss 추가*/
+@import 'comments'; /*comments.css.scss 추가*/
+
+body { padding-top: 60px; }

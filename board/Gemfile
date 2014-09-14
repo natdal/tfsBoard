@@ -1,0 +1,33 @@
+source 'https://rubygems.org'
+
+
+gem 'rails', '4.1.5'
+
+gem 'mysql2'
+
+gem 'sass-rails', '~> 4.0.3'
+
+gem 'uglifier', '>= 1.3.0'
+
+gem 'coffee-rails', '~> 4.0.0'
+
+gem 'jquery-rails'
+
+gem 'turbolinks'
+
+gem 'jbuilder', '~> 2.0'
+
+gem 'sdoc', '~> 0.4.0',          group: :doc
+
+gem 'spring',        group: :development
+
+gem 'bootstrap-sass', '~> 3.1.1' #Twitter-Bootstrap을 레일스 프로젝트에서 사용하기 쉽게 해주는 젬
+gem 'simple_form' #bootstrap과 함께 form을 사용할 때 잘 어울리는 젬
+
+gem 'friendly_id', '~> 5.0.0' #id값 대신에 특정 속성값으로 호출을 해주는 젬(ex localhost:3000/bulletin/id=2 대신에 localhost:3000/bulletin/공지사항)
+
+gem 'carrierwave' #이미지 업로드 구현 젬
+
+gem 'mini_magick' #이미지 크기 조절 젬
+
+gem 'acts-as-taggable-on' #태그 젬

@@ -1,0 +1,21 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: <%=ENV['C9_USER']%> #cloud9에서 작업하고있으므로 db의 유저네임을 cloud9 username으로 잡아준다.
+  password:
+  host: <%=ENV['IP']%> #cloud9에서 작업하고있으므로 db의 유저네임을 cloud9 IP로 잡아준다.
+
+development:
+  <<: *default
+  database: board_development
+
+test:
+  <<: *default
+  database: board_test
+
+production:
+  <<: *default
+  database: board_production
+  username: board
+  password: <%= ENV['BOARD_DATABASE_PASSWORD'] %>
