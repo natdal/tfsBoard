@@ -1,0 +1,466 @@
+*레일즈 설치
+gem install rails -v 4.1.5
+
+rails _4.1.5_ new hello_app
+
+bundle install
+
+*레일즈 서버 시작
+rails server -p &PORT -b &IP
+
+*기트연동
+git config --global user.name "natdal"
+git config --global user.email natdal7535@gmail.com
+git config --global push.default matching
+git config --global alias.co checkout
+
+git push -u origin --all
+
+*스타일
+app/assets/stylesheets/
+scss를 사용한다면 css파일을 삭제한후 파일명.scss.css파일 새로 생성
+기본 스타일 지정
+
+*자바스크립트
+app/assets/javascripts/
+//= require 연결할 자바스크립트 관련 젬 이름 추가
+
+*컨트롤러 생성
+rails generate controller post index
+config/routes.rb 에서 원하는대로 수정 (ex. root 'board#index') or (ex. get 'board/index')
+
+controller 다음에 오는 첫번째 인수가 컨트롤러의 이름을 지정하는 것이다.
+이것은 레일스의 규칙상 연관되는 모델명의 복수형으로 지정하는데, 반드시 그런 것은 아니다.
+연과되는 모델이 없을 경우에는 임의 이름으로 지정해도 된다.
+이어서 오는 모든 인수는 컨트롤러내의 액션명으로 지정하게 된다.
+
+*모델생성
+rails generate scaffold Post title content:text 모델생성
+rake db:migrate 할 때 rake 명령이 db/migrate 폴더를 찾아 거기에 있는걸 어쩌고 저쩌고 하는데
+그때 만들어지는 테이블 명은 모델명(ex. Post)의 복수형(ex. posts)형으로 자동 지정된다.
+rake db:migrate:status 상태보기
+rake db:rollback 상태 되돌리기
+
+마이그레이션 상태(Status)는 해당 마이그레이션 ID 값이 schema_migrations 테이블에 존재할 때
+up 상태로 표시되고
+없을 경우에 down 상태로 표시된다.
+
+레일스 DB 콘솔로 접근해서 해당 테이블의 값을 조회
+rails db
+mysql> select version from schema_migrations;
+
+사용할 수 있는 라우트 표시
+bin/rake routes
+
+
+scaffold 제너레이터를 이용하여 특정 모델 리소스를 생성하면
+기본적으로 index, show, new, edit, create, update, destroy 등 7개의 컨트롤러 액션이 생성
+create 특정 모델의 한 객체를 생성하여 DB 테이블로 저장한다. 액션 종료시 show 액션으로 리디렉트
+index DB 쿼리후, 특정 모델(들)의 모든 객체를 불러와 보여 준다
+show DB 쿼리후, 특정 모델의 특정 객체만을 불러와 보여 준다.
+update DB 쿼리후, 특정 모델의 속성을 변경한 후 DB 테이블로 저장한다. 액션 종료시 show 액션으로 리디렉트된다.
+destroy DB 쿼리후, 특정 모델의 특정 객체(들)를 삭제한다. 액선 종류시 index 액션으로 리디렉트된다.
+
+new와 edit 액션은 데이터 조작을 하지 않고 단지 뷰를 렌더링하는 기능만을 가진다
+form 파셜 템플릿 파일
+new와 edit 뷰 템플릿 파일에서 사용
+
+*어플리케이션 레이아웃
+app/views/layouts/ 프로젝트 전용 레이아웃 관리
+application.html.erb 전체 어플리케이션 레이아웃 생성
+[<%= yield %> 각각의 액션이 실행된 후 HTML로 렌더링되는 결과가 이 부분에 삽입된다]
+
+app/assets/stylesheets/application.css.scss 파일을 수정
+
+*헬퍼메소드
+컨트롤러의 특정 메소드를 뷰 템플릿 파일에서도 사용할 수 있게 해 놓은 것을 헬퍼메소드라고 한다.
+link_to 헬퍼메소드는 링크태그(<a>)를 만들어 준다.
+ex. <%= link_to "글작성", posts_path, class:'btn btn-default' %>
+렌더링=> <a class="btn btn-default" href="/posts">글작성</a>
+
+
+*모델관계
+has_many 다음에는 항상 복수형(ex. posts)을 지정해야 하고,
+belongs_to 다음에는 항상 단수형(ex. bulletin)으로 지정해야 한다.
+has_many의 경우 dependent 옵션을 지정할 수 있는데,
+:destroy로 지정할 경우, 특정 모델(ex. bulletin) 레코드를 삭제할 때
+이 게시판에 속하는 모든 자식(ex. posts)도 동시에 삭제된다.
+
+has_many :posts, dependent: :destroy
+belongs_to :bulletin
+
+단, 이와 같이 두 모델의 관계를 선언하는 것만으로 실제 DB 테이블이 자동으로 연결되지 않는다.
+즉, 관계형 데이터베이스에서 두 테이블이 관계를 가지기 위해서는
+자식(ex. post) 테이블 필드 중에
+부모(ex. bulletin) 테이블의 id를 외래키(foreign key)로 가지고 있어야 한다.
+
+두 모델이 액티브레코드를 통해서 연결되는 각각의 테이블을 물리적으로 연결하기 위해서는
+자식 테이블에 bulletin_id(모델명 + 'id')이란 정수형의 필드를 추가해 주어야 한다.
+레일스의 모든 모델 클래스는 각각의 해당 테이블의 primary key가 id인 것으로 가정한다. 
+이것은 레일스의 규칙이다.
+물론 id 이외의 다른 키를 primary key로 사용할 수 있지만,
+부가적인 작업을 더 해주어야 하기 때문에 매우 불편하다. 
+
+rails g migration AddBulletinIdToPosts bulletin_id:integer:index
+
+위의 bulletin_id:integer:index와 같이 추가할 필드명과 데이터형 다음에 index 옵션을 지정하면
+해당 필드에 대한 인덱스 파일이 지정되며, 이는 빠른 검색을 가능하게 한다.
+
+db/migrate/(생성된 일자가 포함된 일련의 숫자)_add_bulletin_id_to_posts.rb 확인후
+마이그레이션 작업(rake db:migrate)
+
+현재까지 작업한 것이 제대로 동작하는지 확인
+rials console
+모델인스턴스 = 모델클래스객체.new(ex. bulletin = Bulletin.new)
+bulletin.post까지 작성후 tab2번 누르면 뜨는 메소드들 확인
+
+출력 메소드
+ex. bulletin.post_ids   bulletin.post_ids=  bulletin.posts      bulletin.posts=
+    반환                등록                반환                등록
+bulletin.post_ids : 이 메소드는 특정 bulletin 객체에 속하는 모든 post 객체들의 id 값들을 배열로 반환한다. 현재는 빈배열을 반환할 것이다.
+bulltein.post_ids= : 이 메소드는 post 객체들의 id 값들을 요소로하는 배열을 할당해 주어, 해당 post 객체들이 이 bulletin 객체의 자식 객체들로 등록되도록 한다.
+bulletin.posts : 이 메소드는 특정 bulletin 객체에 속하는 모든 post 객체들을 배열로 반환한다. 현재는 빈배열(#<ActiveRecord::Associations::CollectionProxy []>)을 반환할 것이다.
+bulletin.posts= : 이 메소드는 post 객체들를 요소로하는 배열를 할당해 주어, 해당 post 객체들이 이 bulletin 객체의 자식 객체들로 등록되도록 한다.
+
+특정 모델(ex. 게시판)에 하나의 글을 추가한다고 가정했을 시
+rails console 레일즈 콘솔 시작
+bulletin = Bulletin.create title:"공지사항"
+post = Post.create title:"레일스 가이드라인 책 집필", content:"초보자를 위한 레일스" post테이블에 레코드생성
+post.bulletin_id post테이블에 bulletin_id값이 얼마인지 확인(nil이 떠야 정상)
+bulletin.id bulletin테이블 id값 확인
+post.bulletin_id = bulletin.id post테이블의 bulletin_id값에 방금 생성한 bulletin테이블의 레코드 id값 삽입
+bulletin.posts 확인
+또는
+post = bulletin.posts.create title:"두번째 글", content: "관계선언을 이용하여 글을 등록합니다"
+bulletin.posts
+bulletin.posts.size
+즉, bulletin.posts.create와 같이 post를 생성하면 생성되는 post 객체의 bulletin_id 속성이
+bulletin.id 값으로 자동으로 지정되기 때문에,
+post.bulletin_id=에 bulletin.id 값을 할당하는 과정이 필요 없게 된다.
+
+만약 comment같이 기본적으로 연결되야만 하는 모델을 만든다고 한다면
+rails g model Comment post:references body:text
+이와 같이 모델을 생성하게 되면 이 모델과 액티브레코드에 의해
+자동으로 연결될 수 있는 데이터베이스 테이블을 생성할 수 있도록 마이그레이션 파일도 생성된다.
+우리는 이 파일을 이용하여 실제로 테이블을 생성하게 되는 것이다.
+post:references라고 모델 속성을 지정했는데,
+이것은 post_id라는 속성을 만들고
+이 속성을 foreign key로 사용하도록 해 준다. 
+그리고 해당 모델(Comment) 클래스에는 belongs_to :post라는 관계선언을 자동으로 추가해 준다.
+
+*friendly_id 젬
+gem 'friendly_id', '~> 5.0.0'
+bundle install
+
+class Bulletin < ActiveRecord::Base
+  extend FriendlyId
+  friendly_id :title
+
+  has_many :posts, dependent: :destroy
+end
+
+private
+    def set_bulletin
+      @bulletin = Bulletin.friendly.find(params[:id])
+    end
+
+
+*중첩 라우팅
+RESTful URI로부터
+bulletin_id 또는 post의 id 값을 받아 해당 bulletin 객체를 생성하거나
+이 bulletin 객체의 posts 개체를 불러오기 위해서는 중첩 라우팅(nested routing) 기법을 사용하면 편리
+config/routes.rb 수정
+
+resources :bulletins do #bulletins/:bulletin_id/posts(.:format)
+    resources :posts
+  end
+
+rake routes로 확인
+
+외부로부터 들어오는 요청이 이 테이블의 URI Pattern과 일치할 경우
+매핑되는 컨트롤러의 액션이 호출된다.
+이 때 URI Pattern 중 심볼에 매칭되는 부분은 params[] 해쉬의 키로 사용되어
+해당 파라미터의 값을 불러올 수 있게 된다.
+위의 예에서는 params[:bulletin_id] 키에 해당하는 파라미터 값을 불러와 액션에서 사용할 수 있게 된다.
+
+rake routes로 확인해보면 
+Prefix와 기타 등등이 있다.
+Prefix 끝에 _path 또는 _url을 붙여 헬퍼메소드로 사용할 수 있는데,
+뷰 템플릿에서 동적 URL을 사용할 수 있도록 해 주어
+정적 URL을 일일이 입력할 필요가 없게 된다.
+즉, 뷰 템플릿 파일에서 <%= bulletin_posts_path('공지사항') %>와 같이 사용하면
+뷰 파일이 렌더링될 때 http://localhost:3000/bulletins/공지사항/posts으로 변환된다.
+또한 이 URI Pattern에 매핑되는 해당 컨트롤러의 액션에서는
+params[:bulletin_id] 해시키를 이용하여 '공지사항' 값을 얻을 수 있게 된다.
+
+
+
+*컨트롤러 변경
+중첩라우팅 이후에 해야됨
+
+app/controllers/*_controller.rb
+
+여기서
+
+액션 실행전에 수행될
+before_action :set_bulletin
+before_action :set_post, only: [*]
+잡아주고
+각 액션에 before_action으로 생성된 인스턴스변수를 사용해서 연결시켜줘야된다.
+
+ex.
+def index #DB 쿼리후, 특정 모델(들)의 모든 객체를 불러와 보여 준다
+ #@posts = Post.all
+ @posts = @bulletin.posts.all#인스턴스 변수 @posts를 생성, 이것은 해당 뷰 템플릿(app/views/posts/index.html.erb)에서 바로 사용
+end
+
+ex.
+format.html { redirect_to [@post.bulletin, @post], notice: 'Post was successfully created.' }#post가 bulletin의 id값을 foregin key로 소유하고 있음.
+
+이것은 해당 뷰 템플릿(app/views/posts/index.html.erb)에서 바로 사용할 수 있게 된다.
+
+*flash 메시지 표시하기
+레일스에서는 컨트롤러의 액션 실행시 발생하는 액티브레코드 관련 각종 메시지를 
+flash라는 세션의 특수한 형태를 통해서 표시할 수 있다. 
+FlashHash 클래스의 인스턴스
+액션간에 임시로 객체를 전달할 수 있는 수단
+flash 객체에 어떤 것이라도 지정할 수 있고 바로 다음번 액션에서만 사용되고 사라지게 되는 것
+
+레일스에서는 대게 이러한 flash 메시지를 어플리케이션 레이아웃의 body 태그내 최상단에 위치시킨다.
+
+flash 메시지를 할당할 때 flash[:notice] = 'some message'와 같이 코드를 작성할 수 있지만, 
+redirect_to 메소드를 사용할 때는 해시형태의 옵션으로 flash 메시지를 지정할 수도 있다.
+
+
+*기본 데이터 추가하기
+bin/rake db:seed
+이와 같은 명령은 db/seeds.rb 파일에 있는 명령을 실행하여 데이터를 생성하게 된다.
+ex.
+# 디폴트 게시판 생성
+Bulletin.create! title: '공지사항'
+Bulletin.create! title: '새소식'
+Bulletin.create! title: '가입인사', post_type: 'blog'
+Bulletin.create! title: '갤러리', post_type: 'gallery'
+bin/rake db:reset
+
+*AJAX
+폼 데이터를 ajax로 서밋하기 위해서 simple_form_for 메소드에 remote: true 옵션을 지정해야함.
+서밋 액션이 일어날 경우 액션이 호출된 후 
+액션명.html.erb 파일 대신에 
+액션명.js.erb 파일이 렌더링되고 
+최종적으로 액션명.js 자바스크립트 파일을 응답으로 클라언트로 보낸다.
+
+*태그
+gem 'acts-as-taggable-on'
+bundle install
+rake acts_as_taggable_on_engine:install:migrations
+
+*팁
+-순서
+1.레일즈설치
+2.기트연동
+2.5.(필요시 헤로쿠or서버)
+3.디비 설치
+4.젬 설치
+5.컨트롤러생성(대표 컨트롤러)
+6.모델생성(사용할 모델)
+7.어플리케이션 레이아웃 설정(*어플리케이션 레이아웃 참조, 헬퍼메서드도 작성)
+8.생성한 모델의 액션(ex. index) 작성(post모델이라면 app/controllers/이하의 컨트롤러 파일)
+9.생성한 모델에 따른 레이아웃 작성(post모델이라면 app/view/posts/이하에 있는 파일들)
+10.반복 : 필요한 모델 생성 (..g scaffold.. ->) ->마이그레이션(rake db:migrate)->view수정
+11.모델과 모델간의 관계형성(일대다,일대일,다대다)
+원하는 모델 파일을 열고(app/models/*.rb) has_many 또는 belongs_to같은 관계들을 맺어준다.
+dependent옵션도 정해준다.
+12.루비에서 연결시킨 후 실제로 DB에 모델끼리의 관계를 가지기 위해
+자식테이블에 부모테이블의 id값을 외례키로 잡아준다.
+(ex. rails g migration AddBulletinIdToPosts bulletin_id:integer:index)
+13.db/migrate/(생성된 일자가 포함된 일련의 숫자)_add_bulletin_id_to_posts.rb 확인후
+마이그레이션 작업(rake db:migrate)
+14.현재까지 작업한 것이 제대로 동작하는지 확인
+rials console
+모델인스턴스 = 모델클래스객체.new(ex. bulletin = Bulletin.new)
+bulletin.post까지 작성후 tab2번 누르면 뜨는 메소드들 확인(뜨지않는다면 연결이 잘못됨.)
+15.또 구현할 gem 설치 및 모델 및 뷰 생성
+15.5.gem을 설치했을 때 만약 모델과의 연결을 시켜주거나 클래스와 연결을 시켜줘야된다하면
+extend 젬의 클래스명으로 확장받아야됨.
+16.서로 연결시켜줘야할 모델 딴이 있다면 중첩 라우팅을 시켜줌
+17.서로 모델을 연결시켜준 후에 컨트롤러딴에도 연결시켜줌
+(이부분은 헷갈릴수도 있으니 아직은 문서보고 해결)
+before_action선언하고
+private딴에 적절한 모델 값들 받아주고
+각각의 액션에 적절하게 연결시킨다.
+ex. @posts = @bulletin.posts.all
+		일   대 다
+18.컨트롤러딴을 연결 다 시켜주면 뷰딴도 연결시켜주자.
+이것또한 아직은 그냥하기 힘드므로 필요할땐 tfsBoard 프로젝트 보면서 해보자.
+거의 헬퍼메소드(ex. link_to)부분 바꾸는거기때문에 복사붙여넣기가 대부분이고 routes만 잘확인하면 어려운거없다.
+그냥 헷갈림
+19.이런거 다하면 대표 네비게이션 같은것들 링크 또 바꿔줘야함.
+이거 만들어놓고 바꾸고 만들어놓고 바꾸기때문에
+적당히 만든다음에 수정하는게 편함
+app/views/layouts/application.html.erb 수정
+20.게시판같은거 형태 지정해주기 위해 특정 모델에 _type속성 추가하거나
+다른거 필요한 속성 있으면 그거 추가해줌
+ex. rails g migration add_post_type_to_bulletins post_type
+db/migrate안에 생성된 마이그레이션 파일에 필요한 값 추가(ex. default: '')
+rake db:migrate
+21.strong parameter 추가
+*_controller.rb 파일을 열어 방금 만든 모델 속성 추가
+ex. 
+def bulletin_params
+  params.require(:bulletin).permit(:title, :description, :post_type)
+end
+22.추가한 모델을 입력받거나 수정하기 위해 뷰딴 변경 또는 추가
+ex.
+<%= f.input :post_type, collection: [ ['게시판', 'bulletin'], ['블로그', 'blog']], input_html:{ class:'form-control'} %>
+33.모델을 추가하고 컨트롤러에 연결하고 뷰딴에 연결을 다하면
+추가한 타입에 따른 뷰딴을 보이도록 하기 위해 view 디렉토리에 주제에 따른 디렉토리를 따로 만든다.
+post_type을 추가했으면 post_type이라는 디렉토리명으로 만든다.
+파일을 생성하고 용도에 맞는 이름으로 저장한다.
+ex.
+_blog.html.erb
+_bulletin.html.erb
+_gallery_html.erb
+34.바꾸고 싶은 컨트롤러의 index같은 액션 뷰 파일의 모든 내용을
+지금 만든 파일(게시판 형태라면 _bulletin.html.erb)로 모두 옴긴다.
+옴길때 link_to 같은 헬퍼메서드의 routes 부분을 적절하게 바꾼다.
+ex.
+<%= link_to 'New Post', new_post_path, class: 'btn btn-default' %>
+이걸
+<%= link_to 'New Post', new_bulletin_post_path, class: 'btn btn-default' %> 이렇게.
+옴긴 후 partial 템플릿 파일을 인수로 받아 렌더링 결과로 삽입해 주기 위해 기존의 파일 코드를
+<%= render "posts/post_types/#{@bulletin.post_type}" %> 이런식으로 바꿔준다.
+자세한 설명은 팁중에 'render 메서드' 참조
+35.컨트롤러에 방금 추가한 내용의 적절한 post_params를 추가해준다.
+36.뷰딴을 적절히 만들고
+37.스타일시트로 꾸민다. app/assets/stylesheets/작업중인 객체 이름.css.scss
+38.방금 꾸민 스타일시트를 어플리케이션에 적용시켜주기 위해
+app/assets/stylesheets/application.css.scss파일에 
+@import '작업중인 객체 명';을 추가해준다.
+39.이거 반복
+40.만약 어떤 기능을 구현한다 하면 따로 클래스를 생성해줘야한다.
+ex. rails g uploader Picture
+carrierwave를 상속받는 uploader 폴더안에 upload를 구현해주는 클래스
+같은걸 생성해주고
+41.추가해줄 db를 생성한다음
+rails g migration add_picture_to_posts picture
+42.마이그레이션 시킨다.
+rake db:migrate
+43.컨트롤러가 아닌 클래스파일을 따로 만들었기에 원하는 컨트롤러의 모델딴에 마운트를 시켜줘야된다.
+models/*.rb쪽에서 원하는 파일을 찾아
+ex.
+class Post < ActiveRecord::Base
+  belongs_to :bulletin
+  mount_uploader :picture, PictureUploader
+end
+44.필요하다면 flash 메시지도 만든다.
+55.rake db:seed
+db/seeds.rb 파일에 있는 명령을 실행하여 데이터를 생성
+rake db:reset
+56.기존의 것과 연결되야 될 comment같은거 또 생성
+db:migrate
+57.AJAX로 만든거 확장자 변경 .html->.js
+
+
+-버전관리
+Gemfile.lock
+bundle install로 설치된 젬들의 버전을 기억해 두는 파일
+따라서 이 파일은 소스관리(git)에 포함해 두는 것이 좋다.
+이것은 다른 개발자가 동일한 소스로 개발할 때 동일한 젬 버전을 사용할 수 있게 해 주어 호환성의 문제를 해결할 수 있는 방법이 되기도 한다.
+
+-모바일환경에서 bootstrap
+Bootstrap 3는 모바일 우선 정책을 지원한다.
+따라서 자동으로 responsive 또는 fluid 페이지 레이아웃이 적용되어
+화면크기에 따라 레이아웃이 최적화되어 변경된다.
+그러나 실제로 HTML 페이지의 <head></head> 태그 사이에 viewport에 대한 메터데이터를 추가하지 않으면
+제대로 적용되지 않는다.
+따라서 아래와 같은 메타 데이터를 추가해 주어야 한다.
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+-레일스 4부터 _filter가 _action으로 변경
+before_filter, after_filter, around_filter는 각각
+before_action, after_action, around_action으로 변경
+
+-타임존
+레일스의 디폴트 타임존 변경은 config/application.rb 파일에서 할 수 있다.
+레일스의 디폴트 타임존은 UTC
+타임존 확인방법
+rake -D time
+rake time:zones:local
+타임존을 변경하여 시간을 해당 타임존에 맞게 표시할 수 있지만,
+데이터베이스 저장된 값을 항상 UTC 타임존으로 저장된다는 것을 주목하자.
+DB로부터 UTC로 저장된 시간을 불러와 표시할 때는
+레일스가 config/application.rb 에 저장된 time_zone 값에 맞게 자동으로 변경한 후에 표시한다.
+그러나, DB에 저장할 때도 로컬 타임존에 맞게 저장하려면
+config.time_zone = 'Seoul' 아래에
+config.active_record.default_timezone = :local와 같이 추가해 주면 된다.
+
+-게시판 형태
+일반형(bulletin) : 일반적인 게시판의 형태. 디폴트 형태
+블로그형(blog) : 블그로와 게시물의 내용이 일렬로 보이도록 하는 형태
+갤러리형(gallery) : 이미지 갤러리처럼 한 줄에 여러개의 썸네일 이미지가 보이도록 하는 형태
+
+-render 메서드
+render 메소드는 partial 템플릿 파일을 인수로 받아 렌더링 결과를 삽입해 준다.
+ex.
+루비에서는 이중 인용부호 내의 #{expression}는 표현식의 결과로 대체해 준다.
+따라서 @bulletin.post_type 값이 'bulletin'일 경우 "posts/post_types/bulletin"로 평가되어
+app/views/posts/post_types/ 디렉토리의 _bulletin.html.erb이라는 partial 템플릿 파일을
+render 메소드가 처리하게 된다.
+
+-뷰딴에서의 ruby 문법
+이중 인용부호 내의 #{expression}는 표현식의 결과로 대체
+
+-partial 템플릿 파일
+partial 템플릿 파일에서는 부모 템플릿 파일에서 사용하는 모든 인스턴스 변수를 그대로 사용할 수 있다.
+
+-ImageMagick설치
+sudo apt-get install ghostscript imagemagick
+설치 확인
+convert
+
+-carrierwave 젬
+gem 'carrierwave'
+carreirwave 젬을 사용할 때에는 한글파일명을 가진 파일을 업로드할 때 문제가 있다.
+즉, 한글 파일명을 가진 파일이 업로드되면
+sanitization 과정에서 한글이 모두 "_" 문자로 대체되어 파일명을 알수 없게 된다.
+스페이스같은 공백 또한 "_"문자로 대체되므로 아래와 같이 처리해줘야한다.
+config/initializers/carrierwave.rb 파일을 생성한 후 아래의 코드를 추가.
+# Allow non-ascii letters in uploaded filenames
+CarrierWave::SanitizedFile.sanitize_regexp = /[^[:word:]\s\.\-\+]/
+
+carrierwave설치 후 rails g uploader Picture같은 클래스를 생성했을때
+업로드한 파일을 삭제하면 빈 디렉토리가 남게된다.
+그 빈 디렉토리를 삭제해주기 위해 아래에 있는 내용을 추가한다.
+# 업로드 상단에 아래의 after 매크로를 추가한다.
+after :remove, :delete_empty_upstream_dirs
+
+def delete_empty_upstream_dirs
+  path = ::File.expand_path(store_dir, root)
+  Dir.delete(path) # fails if path not empty dir
+
+  path = ::File.expand_path(base_store_dir, root)
+  Dir.delete(path) # fails if path not empty dir
+rescue SystemCallError
+  true # nothing, the dir is not empty
+
+-miniMagick 젬
+이미지 크기 조절
+gem 'mini_magick'
+--------
+heroku
+
+"group :production do
+  gem 'pg',             '0.17.1'
+  gem 'rails_12factor', '0.0.2'
+end"
+
+heroku version 헤로쿠가 설치되어있는지 확인
+https://toolbelt.heroku.com/ 헤로쿠가 설치되어있는지 확인 (둘중에 아무거나)
+heroku login
+heroku keys:add 로 로그인과 SSH key 추가
+heroku create
+
+first step : $ git push heroku master 기트를 이용하여 어플리케이션을 해로쿠로 배치법
+끝
+--------
