@@ -7,10 +7,15 @@ redo에 대해서 다시 공부
 lambda 다시 공부
 
 rails new 어플리케이션명 -d mysql
+sudo apt-get install mysql
+sudo apt-get install mysql2
 mysql2설치할 때
 sudo apt-get install libmysqlclient-dev도 같이 설치해줘야된다.
 이후에 gem install mysql (이거 안해서 지금껏 에러)
-그다음 https://docs.c9.io/running_a_rails_app.html에서 유저네임부분이랑 호스트 부분 변경
+그다음 https://docs.c9.io/running_a_rails_app.html에서 참고한 유저네임부분이랑 호스트 부분 변경
+database.yml => 
+  username: <%=ENV['C9_USER']%> #cloud9에서 작업하고있으므로 db의 유저네임을 cloud9 username으로 잡아준다.
+  host: <%=ENV['IP']%> #cloud9에서 작업하고있으므로 db의 유저네임을 cloud9 IP로 잡아준다.
 service mysql start
 rake db:create
 rake db:migrate
