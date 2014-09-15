@@ -1,3 +1,15 @@
+개발할때 쓸껀지 헤로쿠에 배포할때 쓸건지에 따라 적절하게 젬을 위치시키면 됨
+group :development do
+	#gem 'mysql2'
+	gem 'spring'
+end
+
+group :production do #heroku는 Postgres를 사용하기 떄문에 heroku db를 사용하기 위한 젬을 설치
+	gem 'mysql2'
+	gem 'pg',             '0.17.1'
+	gem 'rails_12factor', '0.0.2'
+end
+
 rails new 어플리케이션명 -d mysql
 sudo apt-get install mysql
 sudo apt-get install mysql2
